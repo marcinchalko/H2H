@@ -1,0 +1,66 @@
+version: '3'
+services:
+    postgresql:
+        image: postgres
+        container_name: h2h-db
+        ports:
+            - '5433:5432'
+        environment:
+            - POSTGRES_USER=${DATABASE_USER}
+            - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+            - POSTGRES_DB=${DATABASE_NAME}        
+        networks:
+            vpcbr:
+    php:
+        build: 
+          context: ../
+          dockerfile: ./docker/php-fpm/Dockerfile
+        image: h2h-php:latest
+        container_name: h2h-php
+        healthcheck:
+            interval: 10s
+            timeout: 3s
+            retries: 3
+            start_period: 30s
+        ports:
+            - '9002:9000'
+        environment:
+            - SYMFONY_APP_ENV=${APP_ENV}
+            - SYMFONY_APP_SECRET=${APP_SECRET}
+            - SYMFONY_DATABASE_URL=pgsql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+            - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
+            - DATABASE_DRIVER=pdo_pgsql
+            - DATABASE_HOST=${DATABASE_HOST}
+            - DATABASE_PORT=${DATABASE_PORT}
+            - DATABASE_NAME=${DATABASE_NAME}
+            - DATABASE_USER=${DATABASE_USER}
+            - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+        volumes:
+            # - ./php-fpm/.env.template:/var/www/symfony/.env
+            - ../app:/var/www/symfony
+            - ./logs/symfony:/var/www/symfony/var/log
+            - /var/www/symfony/vendor # ignore vendor files
+            - /var/www/symfony/var/cache # ignore cache files
+        networks:
+            vpcbr:
+    nginx:
+        build: 
+            context: ../
+            dockerfile: ./docker/nginx/Dockerfile
+        image: h2h-nginx:latest
+        container_name: h2h-nginx
+        environment:
+            - VIRTUAL_HOST=localhost
+            - FPM_CONTAINER_NAME=php
+        ports:
+            - '8080:81'
+        depends_on:
+            - php
+        volumes:
+          - ./logs/nginx/:/var/log/nginx:cached
+        #   - ../app:/var/www/symfony
+        networks:
+            vpcbr:
+networks:        
+   vpcbr:
+       driver: bridge

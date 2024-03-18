@@ -1,0 +1,17 @@
+#index:
+#    path: /
+#    controller: App\Controller\DefaultController::index
+app.swagger_ui:
+    path: /documentation
+    methods: GET
+    defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
+
+contactMessage_post:
+    methods: POST
+    path: /api/v1/contactMessage
+    controller: App\Controller\ContactController::saveMessage
+
+contactMessage_get:
+    methods: GET
+    path: /api/v1/contactMessage
+    controller: App\Controller\ContactController::getMessages

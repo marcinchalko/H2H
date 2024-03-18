@@ -1,0 +1,132 @@
+nelmio_api_doc:
+    documentation:
+        openapi: 3.0.0
+        info:
+            title: Kontakt API
+            description: API do zarządzania wiadomościami kontaktowymi
+            version: 1.0.0
+        paths:
+            /api/v1/contactMessage:
+                post:
+                    tags:
+                        - Contact
+                    summary: Zapisz wiadomość kontaktową
+                    requestBody:
+                        required: true
+                        content:
+                            application/json:
+                                schema:
+                                    $ref: '#/components/schemas/ContactMessage'
+                    responses:
+                        '201':
+                            description: Wiadomość została zapisana
+                            content:
+                                application/json:
+                                    schema:
+                                        message: Created
+                                        data:
+                                            $ref: '#/components/schemas/ContactMessage'
+                                    example:
+                                        message: Created
+                                        data:
+                                            name: John Doe
+                                            email: john@example.com
+                                            message: Wiadomość została zapisana pomyślnie.
+                                            agreement: true
+                                            created_at: "2024-03-18T20:09:19+00:00"
+                        '400':
+                            description: Nieprawidłowe dane
+                            content:
+                                application/json:
+                                    example:
+                                        message: Invalid Request
+                                        errors:
+                                            - property: email
+                                              value: johnple.com
+                                              message: Nieprawidłowy adres e-mail
+                get:
+                    tags:
+                        - Contact
+                    summary: Pobierz listę wiadomości kontaktowych
+                    parameters:
+                        - in: query
+                          ref: '#/components/parameters/pageParam'
+                        - in: query
+                          ref: '#/components/parameters/perPageParam'
+                    responses:
+                        '200':
+                            description: Lista wiadomości kontaktowych
+                            content:
+                                application/json:
+                                    schema:
+                                        more: false
+                                        data:
+                                            type: array
+                                            items:
+                                                $ref: '#/components/schemas/ContactMessage'
+                                    example:
+                                        more: false
+                                        data:
+                                        - name: John Doe
+                                          email: john@example.com
+                                          message: To jest testowa wiadomość.
+                                          agreement: true
+                                          created_at: "2024-03-18T20:09:19+00:00"
+                        '404':
+                            description: Brak wiadomości
+                            content:
+                                application/json:
+                                    example:
+                                        more: false
+                                        data: []
+        components:
+            schemas:
+                ContactMessage:
+                    type: object
+                    required:
+                        - name
+                        - email
+                        - message
+                        - agreement
+                    properties:
+                        name:
+                            type: string
+                            description: Imię i nazwisko osoby kontaktującej się
+                            example: John Doe
+                        email:
+                            type: string
+                            format: email
+                            description: Adres e-mail osoby kontaktującej się
+                            example: john@example.com
+                        message:
+                            type: string
+                            description: Treść wiadomości kontaktowej
+                            example: To jest testowa wiadomość.
+                        agreement:
+                            type: boolean
+                            description: Zgoda na przetwarzanie danych osobowych
+                            example: true
+                        created_at: 
+                            type: string
+                            description: data utworzenia
+                            example: "2024-03-18T20:09:19+00:00"
+            parameters:
+                pageParam:
+                    name: page
+                    in: query
+                    description: Numer strony wyników
+                    required: false
+                    schema:
+                        type: integer
+                        default: 1
+                perPageParam:
+                    name: per_page
+                    in: query
+                    description: Liczba wyników na stronę
+                    required: false
+                    schema:
+                        type: integer
+                        default: 10
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/api(?!/doc.json$) # Accepts routes under /api except /api/doc

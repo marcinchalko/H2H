@@ -1,1 +1,4 @@
 app/.env
+app/supervisord.log
+app/supervisord.pid
+docker/data

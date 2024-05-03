@@ -36,7 +36,6 @@ services:
             - DATABASE_USER=${DATABASE_USER}
             - DATABASE_PASSWORD=${DATABASE_PASSWORD}
         volumes:
-            # - ./php-fpm/.env.template:/var/www/symfony/.env
             - ../app:/var/www/symfony
             - ./logs/symfony:/var/www/symfony/var/log
             - /var/www/symfony/vendor # ignore vendor files
@@ -58,9 +57,67 @@ services:
             - php
         volumes:
           - ./logs/nginx/:/var/log/nginx:cached
-        #   - ../app:/var/www/symfony
+        networks:
+            vpcbr:    
+    supervisor:
+        command: "/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"
+        container_name: h2h-supervisor
+        depends_on:
+            - php
+        image: h2h-php:latest
         networks:
             vpcbr:
+        restart: always
+        volumes:
+            - ../app:/var/www/symfony
+    rabbitmq:
+        container_name: h2h-rabbitmq
+        depends_on:
+            - nginx
+        image: rabbitmq:latest
+        environment:
+            RABBITMQ_DEFAULT_USER: user
+            RABBITMQ_DEFAULT_PASS: pass
+        networks:
+            vpcbr:
+        ports:
+            - 15673:15672
+        restart: always
+        hostname: rabbitmq
+        volumes:
+            - "./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins"
+            - "./data/rabbitmq:/var/lib/rabbitmq"
+            - "./logs/rabbitmq:/var/log/rabbitmq"
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.5.1
+        environment:
+            discovery.type: "single-node"
+            xpack.security.enabled: false
+        ports:
+            - "9200:9200"
+        networks:
+            vpcbr:
+    mongo:
+        image: mongo
+        restart: always
+        container_name: h2h-mongodb
+        ports:
+            - "27017:27017"
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: "root"
+            MONGO_INITDB_ROOT_PASSWORD: "password"
+        networks:
+            vpcbr:
+    redis:
+        image: redis
+        container_name: h2h-redis
+        command: redis-server --requirepass yourpassword
+        ports:
+            - "6379:6379"
+        networks:
+            vpcbr:
+        volumes:
+            - ./data/redis:/data/redis
 networks:        
    vpcbr:
        driver: bridge

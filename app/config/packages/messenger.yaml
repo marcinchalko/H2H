@@ -7,11 +7,20 @@ framework:
         # failure_transport: failed
 
         transports:
-            # https://symfony.com/doc/current/messenger.html#transport-configuration
-            # async: '%env(MESSENGER_TRANSPORT_DSN)%'
-            # failed: 'doctrine://default?queue_name=failed'
-            # sync: 'sync://'
-
+            amqp_email:
+                dsn: amqp://user:pass@h2h-rabbitmq:5672/%2f/email
+                options:
+                    auto_setup: true
+                retry_strategy:
+                    max_retries: 3
+                    delay: 1000
+                    multiplier: 2
+                    max_delay: 0
+                failure_transport: failed_email
+            failed_email: 
+                dsn: amqp://user:pass@h2h-rabbitmq:5672/%2f/failed_email
+                retry_strategy:
+                    service: 'App\Service\FailedRetryStrategy'
         routing:
             # Route your messages to the transports
-            # 'App\Message\YourMessage': async
+            'App\Message\Email': amqp_email

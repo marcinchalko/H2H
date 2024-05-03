@@ -49,6 +49,16 @@ ADD ./docker/php-fpm/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Openssl is the only required thing to install
 RUN apt-get -y install openssl
 
+RUN apt-get update \
+    && apt-get install -y \
+        librabbitmq-dev \
+        libssh-dev \
+    && docker-php-ext-install \
+        bcmath \
+        sockets \ 
+    && pecl install amqp \
+    && docker-php-ext-enable amqp
+    
 RUN cp /etc/ssl/openssl.cnf /etc/ssl/openssl.cnf.ORI && \
     sed -i "s/\(MinProtocol *= *\).*/\1TLSv1.0 /" "/etc/ssl/openssl.cnf" && \
     sed -i "s/\(CipherString *= *\).*/\1DEFAULT@SECLEVEL=1 /" "/etc/ssl/openssl.cnf" && \

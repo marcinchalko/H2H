@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\ContactMessage;
+use App\Message\Email;
 use App\Request\ContactGetMessage;
 use App\Request\ContactSaveMessage;
 use App\Response\CollectionResponse;
@@ -16,6 +17,7 @@ use App\Service\SerializationService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class ContactController extends AbstractController
 {
@@ -28,12 +30,14 @@ class ContactController extends AbstractController
         $this->serializationService = $serializationService;
     }
 
-    public function saveMessage(ContactSaveMessage $request): JsonResponse
+    public function saveMessage(ContactSaveMessage $request, MessageBusInterface $bus): JsonResponse
     {
         $this->serializationService->serialize(
             $this->contactMessageService->save($request->getContent()), 
             ['ContactMessage']
         );
+
+        $bus->dispatch(new Email('john.doe@domain.ltd'));
 
         return new PersistResponse($this->serializationService->toArray());
     }

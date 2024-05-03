@@ -21,7 +21,7 @@ doctrine:
             region_cache_driver:
                 type: pool
                 pool: doctrine.second_level_cache_pool
-            region_lifetime: 60
+            region_lifetime: 3600
             log_enabled: false
 
 when@test:

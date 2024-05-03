@@ -25,3 +25,10 @@ services:
 
     App\EventListener\ExceptionListener:
         tags: [kernel.event_listener]
+
+    app.redis_provider:
+        class: Redis
+        factory: ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
+        arguments:
+          - redis://yourpassword@h2h-redis:6379
+          - {lazy: false, persistent: 0, persistent_id: null, tcp_keepalive: 0, timeout: 30, read_timeout: 0, retry_interval: 0}

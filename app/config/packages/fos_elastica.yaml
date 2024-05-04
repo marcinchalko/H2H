@@ -1,6 +1,6 @@
 fos_elastica:
     clients:
-        default: { host: h2h-elasticsearch, port: 9200 }
+        default: { host: h2h-elasticsearch, port: 9200, compression: true, logger: true }
     indexes:
         contact_message:
             persistence:
@@ -12,7 +12,8 @@ fos_elastica:
                 finder: ~
                 listener: ~
             properties:
-                id: ~
+                id: 
+                    type: integer
                 name: ~
                 email: ~
                 message: ~

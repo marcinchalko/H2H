@@ -37,3 +37,7 @@ services:
         public: true
         arguments:
             - '@fos_elastica.finder.contact_message'
+    
+    App\EventListener\EntityPersistedListener:
+        tags:
+            - { name: doctrine.event_listener, event: postPersist }

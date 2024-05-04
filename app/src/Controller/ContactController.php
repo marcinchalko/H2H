@@ -53,4 +53,33 @@ class ContactController extends AbstractController
 
         return new CollectionResponse($pagerfanta->haveToPaginate(), $this->serializationService->toArray());
     }
+
+    public function getMessagesElastica(ContactGetMessage $request): JsonResponse
+    {
+        $pagination = $this->contactMessageService->getElsatica(
+            $request->getRequest()->query->getInt('page', 1), 
+            $request->getRequest()->query->getInt('per_page', 10)
+        );
+
+        $this->serializationService->serialize($pagination->getItems(), ['ContactMessage']);
+
+        return new CollectionResponse((
+            $pagination->getPaginationData()['current'] < $pagination->getPaginationData()['last']), 
+            $this->serializationService->toArray()
+        );
+    }
+
+    public function getMessagesRedis(ContactGetMessage $request): JsonResponse
+    {
+        $pagination = $this->contactMessageService->getRepository(
+            $request->getRequest()->query->getInt('page', 1), 
+            $request->getRequest()->query->getInt('per_page', 10)
+        );
+
+        $this->serializationService->serialize($pagination->getItems(), ['ContactMessage']);
+
+        return new CollectionResponse((
+            $pagination->getPaginationData()['current'] < $pagination->getPaginationData()['last']), 
+            $this->serializationService->toArray());
+    }
 }

@@ -10,22 +10,25 @@ use App\Service\ValidationService;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use FOS\ElasticaBundle\Finder\PaginatedFinderInterface;
+use Elastica\Query;
 
 class ContactMessageService
 {
     public function __construct(
+        private PaginatedFinderInterface $finder,
         private ContactMessageRepository $contactMessageRepository, 
         private ValidationService $validator, 
-        private EntityManagerInterface $entityManager)
-    {}
+        private EntityManagerInterface $entityManager,
+        private PaginatorInterface $paginator
+    ) {}
 
     public function get($page, $perPage): Pagerfanta
     {
-        $queryBuilder = $this->contactMessageRepository->createQueryBuilder('m')
-            ->orderBy('m.id', 'DESC');
-
-        $adapter = new QueryAdapter($queryBuilder);
-        $pagerfanta = new Pagerfanta($adapter);
+        $pagerfanta = new Pagerfanta(new QueryAdapter(
+            $this->contactMessageRepository->createQueryBuilder('m')->orderBy('m.id', 'DESC')
+        ));
         $pagerfanta->setMaxPerPage($perPage);
         $pagerfanta->setCurrentPage($page);
 
@@ -47,5 +50,26 @@ class ContactMessageService
         $this->entityManager->flush();
 
         return $message;
+    }
+
+    public function getRepository($page, $perPage)
+    {
+        return $this->paginator->paginate(
+            $this->entityManager->getRepository(ContactMessage::class)->findBy([], ['id' => "DESC"]),
+            $page,
+            $perPage
+        );
+    }
+
+    public function getElsatica($page, $perPage)
+    {
+        $query = new Query();
+        $query->addSort(['id' => ['order' => 'desc']]);
+
+        return $this->paginator->paginate(
+            $this->finder->createPaginatorAdapter($query),
+            $page,
+            $perPage
+        );
     }
 }

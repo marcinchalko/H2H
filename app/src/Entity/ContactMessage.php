@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ContactMessageRepository::class)]
+#[ORM\Cache(usage:"NONSTRICT_READ_WRITE")]
 class ContactMessage
 {
     #[ORM\Id]

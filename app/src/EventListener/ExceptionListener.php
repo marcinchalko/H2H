@@ -9,12 +9,22 @@ use App\Exception\InvalidJsonRequest;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Psr\Log\LoggerInterface;
 
 class ExceptionListener
 {
+    public function __construct(private LoggerInterface $logger)
+    {
+
+    }
     public function __invoke(ExceptionEvent $event): void
     {
         $e = $event->getThrowable();
+
+        $this->logger->error('ExceptionListener: ' . $e->getMessage(), [
+            'exception' => $e,
+        ]);
+        
         if ($e instanceof InvalidJsonRequest) {
             $response = new JsonResponse(
                 data: [

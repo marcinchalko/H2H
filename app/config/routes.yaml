@@ -15,3 +15,13 @@ contactMessage_get:
     methods: GET
     path: /api/v1/contactMessage
     controller: App\Controller\ContactController::getMessages
+
+contactMessage_getElastica:
+    methods: GET
+    path: /api/v1/contactMessage/elastica
+    controller: App\Controller\ContactController::getMessagesElastica
+
+contactMessage_getRedis:
+    methods: GET
+    path: /api/v1/contactMessage/redis
+    controller: App\Controller\ContactController::getMessagesRedis

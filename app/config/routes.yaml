@@ -25,3 +25,13 @@ contactMessage_getRedis:
     methods: GET
     path: /api/v1/contactMessage/redis
     controller: App\Controller\ContactController::getMessagesRedis
+
+contactMessage_getRepositoryCache:
+    methods: GET
+    path: /api/v1/contactMessage/redis/cache
+    controller: App\Controller\ContactController::getMessagesRedisCache
+
+contactMessage_getMessagesCache:
+    methods: GET
+    path: /api/v1/contactMessage/cache
+    controller: App\Controller\ContactController::getMessagesCache

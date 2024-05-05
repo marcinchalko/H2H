@@ -74,4 +74,26 @@ class ContactController extends AbstractController
             $pagination->getPaginationData()['current'] < $pagination->getPaginationData()['last']), 
             $this->serializationService->toArray());
     }
+
+    public function getMessagesRedisCache(ContactGetMessage $request): JsonResponse
+    {
+        $pagination = $this->contactMessageService->getRepository(
+            $request->getRequest()->query->getInt('page', 1), 
+            $request->getRequest()->query->getInt('per_page', 10)
+        );
+
+        $this->serializationService->serialize($pagination->getItems(), ['ContactMessage']);
+
+        return new CollectionResponse((
+            $pagination->getPaginationData()['current'] < $pagination->getPaginationData()['last']), 
+            $this->serializationService->toArray());
+    }
+
+    public function getMessagesCache(ContactGetMessage $request): JsonResponse
+    {
+        return new CollectionResponse(
+            false, 
+            $this->contactMessageService->getRepositorySimpleCache()
+        );
+    }
 }

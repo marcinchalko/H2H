@@ -1,12 +1,22 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
+        memory: true
 
         # IMPORTANT: You MUST configure your server version,
         # either here or in the DATABASE_URL env var (see .env file)
         #server_version: '16'
         use_savepoints: true
     orm:
+        metadata_cache_driver:
+            type: pool
+            pool: doctrine.system_cache_pool
+        query_cache_driver:
+            type: pool
+            pool: doctrine.system_cache_pool
+        result_cache_driver:
+            type: pool
+            pool: doctrine.result_cache_pool
         auto_generate_proxy_classes: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
         auto_mapping: true
@@ -21,8 +31,15 @@ doctrine:
             region_cache_driver:
                 type: pool
                 pool: doctrine.second_level_cache_pool
-            region_lifetime: 3600
-            log_enabled: false
+            region_lifetime: 5
+            region_lock_lifetime: 5
+            log_enabled: true
+            regions:
+                contact_message:
+                    lifetime: 5
+                    cache_driver:
+                        type: service
+                        id: doctrine.result_cache_pool
 
 when@test:
     doctrine:

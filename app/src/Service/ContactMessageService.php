@@ -13,6 +13,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use FOS\ElasticaBundle\Finder\PaginatedFinderInterface;
 use Elastica\Query;
+use Symfony\Contracts\Cache\CacheInterface;
+use Psr\Cache\CacheItemInterface;
 
 class ContactMessageService
 {
@@ -21,13 +23,21 @@ class ContactMessageService
         private ContactMessageRepository $contactMessageRepository, 
         private ValidationService $validator, 
         private EntityManagerInterface $entityManager,
-        private PaginatorInterface $paginator
+        private PaginatorInterface $paginator,
+        private CacheInterface $cache
     ) {}
 
     public function get($page, $perPage): Pagerfanta
     {
+        $queryBuilder = $this->contactMessageRepository->createQueryBuilder('m');
+        $queryBuilder->orderBy('m.id', 'DESC');
+
+        $query = $queryBuilder->getQuery();
+        $query->setResultCacheLifetime(60);
+        $query->setResultCacheId('ContactMessageService_get');
+
         $pagerfanta = new Pagerfanta(new QueryAdapter(
-            $this->contactMessageRepository->createQueryBuilder('m')->orderBy('m.id', 'DESC')
+            $query
         ));
         $pagerfanta->setMaxPerPage($perPage);
         $pagerfanta->setCurrentPage($page);
@@ -71,5 +81,22 @@ class ContactMessageService
             $page,
             $perPage
         );
+    }
+
+    public function getRepositoryCache($page, $perPage)
+    {
+        return $this->paginator->paginate(
+            $this->entityManager->getRepository(ContactMessage::class)->findBy([], ['id' => "DESC"]),
+            $page,
+            $perPage
+        );
+    }
+
+    public function getRepositorySimpleCache()
+    {
+        return $this->cache->get('ContactMessageService_getRepositoryCache', function (CacheItemInterface $cacheItem) {
+            $cacheItem->expiresAfter(5);
+            return [1,2,3,4,5];
+        });
     }
 }
